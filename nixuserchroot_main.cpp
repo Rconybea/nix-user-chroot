@@ -27,7 +27,7 @@ template<typename T>
 void
 error_exit_aux(T && x)
 {
-  std::cerr << x;
+    std::cerr << x;
 } /*error_exit_aux*/
 
 template <typename T, typename... Tn>
@@ -49,7 +49,7 @@ error_exit(Tn&&... args)
   else
     ::error_exit_aux(c_prefix, args..., ": errno n/a");
   std::cerr << std::endl;
-  
+
   ::exit(1);
 } /*error_exit*/
 
@@ -74,13 +74,13 @@ establish_unique_dir()
 
   char template_buf[PATH_MAX];
   int err = ::snprintf(template_buf,
-		       PATH_MAX,
-		       "%snixXXXXXX",
-		       tmpdir.c_str());
+               PATH_MAX,
+               "%snixXXXXXX",
+               tmpdir.c_str());
   if (err < 0) {
     std::cerr << "error: nixuserchroot: TMPDIR too long"
-	      << " [" << tmpdir << "]"
-	      << std::endl;
+          << " [" << tmpdir << "]"
+          << std::endl;
     ::exit (1);
   }
 
@@ -108,12 +108,12 @@ verify_nixdir(std::string const & nixdir)
  * caveats:
  * - skip special entries {src_dir/. src_dir/..}
  * - do not bind src_dir/nix,  if it exists
- * 
+ *
  * dest_dir should be a new, empty directory
  */
 void
 bind_dir_contents(std::string const & src_dir,
-		  std::string const & dest_dir)
+          std::string const & dest_dir)
 {
   DIR * d = ::opendir(src_dir.c_str());
   if (!d) {
@@ -125,9 +125,9 @@ bind_dir_contents(std::string const & src_dir,
     char const * subdir = dir_entry->d_name;
 
     if ((::strcmp(subdir, ".") == 0)
-	|| (::strcmp(subdir, "..") == 0))
+    || (::strcmp(subdir, "..") == 0))
       continue;
-	  
+
     if (::strcmp(subdir, "nix") == 0) {
       std::cerr << "warning: nixuserchroot: ignore existing nix directory [" << src_dir << "nix]" << std::endl;
       continue;
@@ -135,20 +135,20 @@ bind_dir_contents(std::string const & src_dir,
 
     char path_buf1[PATH_MAX];
     ::snprintf(path_buf1, sizeof(path_buf1),
-	       "%s%s", src_dir.c_str(), dir_entry->d_name);
+           "%s%s", src_dir.c_str(), dir_entry->d_name);
 
     struct stat stat_buf;
     if (::stat(path_buf1, &stat_buf) < 0) {
       /* for example,  control here if src_dir contains a broken symlink */
       std::cerr << c_prefix << "could not stat [" << path_buf1 << "]"
-		<< ", skip: " << ::strerror(errno)
-		<< std::endl;
+        << ", skip: " << ::strerror(errno)
+        << std::endl;
       continue;
     }
 
     char path_buf2[PATH_MAX];
     ::snprintf(path_buf2, sizeof(path_buf2),
-	       "%s/%s", dest_dir.c_str(), dir_entry->d_name);
+           "%s/%s", dest_dir.c_str(), dir_entry->d_name);
 
     if (S_ISDIR(stat_buf.st_mode)) {
       ::mkdir(path_buf2, stat_buf.st_mode & ~S_IFMT);
@@ -160,11 +160,11 @@ bind_dir_contents(std::string const & src_dir,
 #endif
 
       if (!mount_ok) {
-	std::cerr << c_prefix << "could not bind mount"
-		  << " [" << path_buf1 << "] to"
-		  << " [" << path_buf2 << "]"
-		  << ", skip: " << ::strerror(errno)
-		  << std::endl;
+    std::cerr << c_prefix << "could not bind mount"
+          << " [" << path_buf1 << "] to"
+          << " [" << path_buf2 << "]"
+          << ", skip: " << ::strerror(errno)
+          << std::endl;
       }
     }
   }
@@ -173,8 +173,8 @@ bind_dir_contents(std::string const & src_dir,
 /* in dest_dir, bind mount name -> parent_dir */
 void
 bind_dir(std::string const & parent_dir,
-	 std::string const & name,
-	 std::string const & dest_dir)
+     std::string const & name,
+     std::string const & dest_dir)
 {
   struct stat stat_buf2;
   if (::stat(dest_dir.c_str(), &stat_buf2) < 0) {
@@ -206,7 +206,7 @@ chroot_dir(std::string const & root_dir)
 
   if (!::getcwd(cwd, sizeof(cwd)))
     error_exit("getcwd()");
-  
+
   ::chdir("/");
   if (::chroot(root_dir.c_str()) < 0)
       error_exit("chroot(", root_dir, ")");
@@ -217,96 +217,96 @@ chroot_dir(std::string const & root_dir)
 int
 main(int argc, char * argv[])
 {
-  std::cerr << "nixuserchroot: starting.." << std::endl;
+    std::cerr << "nixuserchroot: starting.." << std::endl;
 
-  uid_t uid = ::getuid();
+    uid_t uid = ::getuid();
 
-  struct passwd * pw = ::getpwuid(uid);
+    struct passwd * pw = ::getpwuid(uid);
 
-  std::string home_dir = str(pw->pw_dir, "");
-  if (home_dir.empty())
-    ::error_exit("no home directory!");
-  
-  /* in user namespace,
-   *   /nix will really be the alue of nix_dir_in
-   */
-  std::string nix_dir_in = str((argc >= 2) ? argv[1] : nullptr,
-			       home_dir + "/.nix");
-  std::cerr << "nixuserchroot: nix_dir_in=[" << nix_dir_in << "]" << std::endl;
+    std::string home_dir = str(pw->pw_dir, "");
+    if (home_dir.empty())
+        ::error_exit("no home directory!");
 
-  std::string nix_dir = ::verify_nixdir(nix_dir_in);
-  std::cerr << "nixuserchroot: nix_dir=[" << nix_dir << "]" << std::endl;;
+    /* in user namespace,
+     *   /nix will really be the alue of nix_dir_in
+     */
+    std::string nix_dir_in = str((argc >= 2) ? argv[1] : nullptr,
+                                 home_dir + "/.nix");
+    std::cerr << "nixuserchroot: nix_dir_in=[" << nix_dir_in << "]" << std::endl;
 
-  /* in user namespace,
-   *   / will refer to the contents of this (temporary) directory
-   */
-  std::string root_dir = ::establish_unique_dir ();
-  std::cerr << "nixuserchroot: root_dir=[" << root_dir << "]" << std::endl;
+    std::string nix_dir = ::verify_nixdir(nix_dir_in);
+    std::cerr << "nixuserchroot: nix_dir=[" << nix_dir << "]" << std::endl;;
 
-  gid_t gid = ::getgid();
+    /* in user namespace,
+     *   / will refer to the contents of this (temporary) directory
+     */
+    std::string root_dir = ::establish_unique_dir ();
+    std::cerr << "nixuserchroot: root_dir=[" << root_dir << "]" << std::endl;
 
-  bool unshare_ok = false;
+    gid_t gid = ::getgid();
+
+    bool unshare_ok = false;
 
 #ifdef NOT_USING
-  unshare_ok = (::unshare(CLONE_NEWNS | CLONE_NEWNUSER) < 0);
+    unshare_ok = (::unshare(CLONE_NEWNS | CLONE_NEWNUSER) < 0);
 #endif
-  if (!unshare_ok)
-    error_exit("unshare(CLONE_NEWNS|CLONE_NEWNUSER)");
+    if (!unshare_ok)
+        error_exit("unshare(CLONE_NEWNS|CLONE_NEWNUSER)");
 
-  /* bind mount the contents of / (/bin, /etc, /var, ..) into root_dir
-   * (excluding /nix,  if present)
-   */
-  ::bind_dir_contents("/", root_dir);
+    /* bind mount the contents of / (/bin, /etc, /var, ..) into root_dir
+     * (excluding /nix,  if present)
+     */
+    ::bind_dir_contents("/", root_dir);
 
-  ::bind_dir(root_dir, "nix", nix_dir);
+    ::bind_dir(root_dir, "nix", nix_dir);
 
-  /* 'magic spell': fix an issue where cannot write to /proc/self/gid_map */
-  int fd_setgroups = ::open("/proc/self/setgroups", O_WRONLY);
-  if (fd_setgroups > 0) {
-    ::write(fd_setgroups, "deny", 4);
-  }
+    /* 'magic spell': fix an issue where cannot write to /proc/self/gid_map */
+    int fd_setgroups = ::open("/proc/self/setgroups", O_WRONLY);
+    if (fd_setgroups > 0) {
+        ::write(fd_setgroups, "deny", 4);
+    }
 
-  /* map original uid/gid in new namespace, to uid=1, gid=1 */
+    /* map original uid/gid in new namespace, to uid=1, gid=1 */
 
-  char map_buf[1024];
-  ::snprintf(map_buf, sizeof(map_buf), "%d %d 1", uid, uid);
+    char map_buf[1024];
+    ::snprintf(map_buf, sizeof(map_buf), "%d %d 1", uid, uid);
 #ifdef NOT_USING
-  update_map(map_buf, "/proc/self/uid_map");
+    update_map(map_buf, "/proc/self/uid_map");
 #endif
-  std::cerr << "nixuserchroot: mapped uid using [" << map_buf << "]" << std::endl;
-  
-  ::snprintf(map_buf, sizeof(map_buf), "%d %d 1", gid, gid);
+    std::cerr << "nixuserchroot: mapped uid using [" << map_buf << "]" << std::endl;
+
+    ::snprintf(map_buf, sizeof(map_buf), "%d %d 1", gid, gid);
 #ifdef NOT_USING
-  update_map(map_buf, "/proc/self/gid_map");
+    update_map(map_buf, "/proc/self/gid_map");
 #endif
-  std::cerr << "nixuserchroot: mapped gid using [" << map_buf << "]" << std::endl;
+    std::cerr << "nixuserchroot: mapped gid using [" << map_buf << "]" << std::endl;
 
-  chroot_dir(root_dir);
+    chroot_dir(root_dir);
 
-  /* convenience.. */
-  ::setenv("NIX_CONF_DIR", "/nix/etc/nix", 1);
+    /* convenience.. */
+    ::setenv("NIX_CONF_DIR", "/nix/etc/nix", 1);
 
-  /* finally,  execute command */
-  int cmd_err = 0;
-  char * cmd_name = nullptr;
+    /* finally,  execute command */
+    int cmd_err = 0;
+    char * cmd_name = nullptr;
 
-  if (argc < 3) {
-    /* default command is "bash" */
-    char * cmd_argv[2];
+    if (argc < 3) {
+        /* default command is "bash" */
+        char * cmd_argv[2];
 
-    cmd_name = const_cast<char *>("/bin/bash");
-    cmd_argv[0] = cmd_name;
-    cmd_argv[1] = nullptr;
+        cmd_name = const_cast<char *>("/bin/bash");
+        cmd_argv[0] = cmd_name;
+        cmd_argv[1] = nullptr;
 
-    /* default command to "bash" */
-    cmd_err = ::execvp(cmd_argv[0], cmd_argv);
-  } else {
-    cmd_name = argv[2];
-    cmd_err = ::execvp(argv[2], argv+2);
-  }
+        /* default command to "bash" */
+        cmd_err = ::execvp(cmd_argv[0], cmd_argv);
+    } else {
+        cmd_name = argv[2];
+        cmd_err = ::execvp(argv[2], argv+2);
+    }
 
-  /* control here only if ::execvp() failed */
-  ::error_exit("execvp(", cmd_name, ")");
+    /* control here only if ::execvp() failed */
+    ::error_exit("execvp(", cmd_name, ")");
 } /*main*/
 
 /* end nixuserchroot_main.cpp */

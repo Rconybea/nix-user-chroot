@@ -12,16 +12,17 @@ clone:
 $ git clone ...
 $ cd nix-user-chroot
 ```
-build:
+
+build (after editing `Makefile`,  it's a two-liner)
 ```
 $ make
 ```
+
 configure
 ```
 $ mkdir -p ~/.nix
 $ ./nix-user-chroot
 ```
+
 `nix-user-chroot` sets `NIX_CONF_DIR` to `/nix/etc/nix` (instead of `/etc/nix`),
 since if you can't write to `/` you probably can't write to `/etc` either
-
-
